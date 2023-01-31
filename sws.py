@@ -71,25 +71,34 @@ while inputs:
                 # First check if bad requests
 
                 
-                patterns = []
-                one = re.compile(r"GET /.+ HTTP/1.0\r\n(?i)Connection: Keep-Alive\r\n\r\n")
-                patterns.append(one)
-                two = re.compule(r"GET /.+ HTTP/1.0\r\n(?i)Connection:Keep-Alive\r\n\r\n")
-                patterns.append(two)
-                five = re.compule(r"GET /.+ HTTP/1.0\r\n\r\n")
-                patterns.append(five)
-                six = re.compule(r"GET /.+ HTTP/1.0\r\n(?i)Connection: Closed\r\n\r\n")
-                patterns.append(six)
-                seven = re.compule(r"GET /.+ HTTP/1.0\r\n(?i)Connection:Closed\r\n\r\n")
-                patterns.append(seven)
+#                 patterns = []
+                requestLine1 = re.compile(r"GET /.+ HTTP/1.0")
+                match = re.search(requestLine1, message1)
+                if match:
+                    print("Match found!")
+                else:
+                    print("No match found.")
+                    bad_request = 'HTTP/1.0 400 Bad Request\n\n'
+                    # message_queues.put(bad_request)
+                    request_message[s] = bad_request
+                
+#                 re.compile('test', re.IGNORECASE)
+#                 two = re.compile(r"GET /.+ HTTP/1.0\r\n(?i)Connection:Keep-Alive\r\n\r\n")
+#                 patterns.append(two)
+#                 five = re.compile(r"GET /.+ HTTP/1.0\r\n\r\n")
+#                 patterns.append(five)
+#                 six = re.compile(r"GET /.+ HTTP/1.0\r\n(?i)Connection: Closed\r\n\r\n")
+#                 patterns.append(six)
+#                 seven = re.compile(r"GET /.+ HTTP/1.0\r\n(?i)Connection:Closed\r\n\r\n")
+#                 patterns.append(seven)
 
                 
                 accepted = False
-
+                
                 # check if request matches any format above
-                for pattern in patterns:
-                    if pattern.match(message1):
-                        accepted = True
+#                 for pattern in patterns:
+#                     if pattern.match(message1):
+#                         accepted = True
 
                 #  if it isn't, return bad request message 
                 if accepted == False:
