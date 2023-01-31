@@ -1,3 +1,5 @@
+
+
 #!/usr/bin/env python3
 # encoding: utf-8
 #
@@ -80,7 +82,7 @@ while inputs:
                     print("No match found.")
                     bad_request = 'HTTP/1.0 400 Bad Request\n\n'
                     # message_queues.put(bad_request)
-                    request_message[s] = bad_request
+                    request_message[s].put(bad_request)
                 
 #                 re.compile('test', re.IGNORECASE)
 #                 two = re.compile(r"GET /.+ HTTP/1.0\r\n(?i)Connection:Keep-Alive\r\n\r\n")
@@ -149,7 +151,8 @@ while inputs:
             else:
                 #print logs and send messages
                 print_log(s,message_request,printresponse)
-                s.send(message2send.encode())
+                # s.send(message2send.encode())  # should this be next_msg
+                s.send(next_msg)
                 
                 
 
