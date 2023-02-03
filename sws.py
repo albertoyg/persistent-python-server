@@ -1,5 +1,3 @@
-
-
 #!/usr/bin/env python3
 # encoding: utf-8
 #
@@ -40,6 +38,8 @@ message_queues = {}
 # request message
 request_message = {}
 
+requestLine = []
+
 timeout = 30
 
 while inputs:
@@ -53,7 +53,10 @@ while inputs:
                                                     timeout)
 
     # Handle inputs
+
+
     for s in readable:
+
 
         if s is server:
             # A "readable" socket is ready to accept a connection
@@ -70,49 +73,33 @@ while inputs:
         else:
             message1 =  s.recv(1024).decode()
             if message1:
+                messages = message1.split('\n\n')
+                
+                
                 # First check if bad requests
 
-                
-#                 patterns = []
-                requestLine1 = re.compile(r"GET /.+ HTTP/1.0")
-                match = re.search(requestLine1, message1)
-                if match:
+                requestLine.append(re.compile(r"GET /.+ HTTP/1.0\r\n\r\n"))
+                requestLine.append(re.compile(r"GET /.+ HTTP/1.0\r\nConnection:Keep-alive\r\n\r\n"))
+                requestLine.append(re.compile(r"GET /.+ HTTP/1.0\r\nConnection: keep-alive\r\n\r\n"))
+                requestLine.append(re.compile(r"GET /.+ HTTP/1.0\r\nConnection: close\r\n\r\n"))
+
+                for i in requestLine:
+                    match = re.search(i, messages[0])
+                    if match:
+                        print(messages[0])
+                        break
+
+
+                if not match:
+                    bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
+                    message_queues[connection].put(bad_request)
+          
+                    
+                else:
                     print("Match found!")
-                else:
-                    print("No match found.")
-                    bad_request = 'HTTP/1.0 400 Bad Request\n\n'
-                    # message_queues.put(bad_request)
-                    request_message[s].put(bad_request)
                 
-#                 re.compile('test', re.IGNORECASE)
-#                 two = re.compile(r"GET /.+ HTTP/1.0\r\n(?i)Connection:Keep-Alive\r\n\r\n")
-#                 patterns.append(two)
-#                 five = re.compile(r"GET /.+ HTTP/1.0\r\n\r\n")
-#                 patterns.append(five)
-#                 six = re.compile(r"GET /.+ HTTP/1.0\r\n(?i)Connection: Closed\r\n\r\n")
-#                 patterns.append(six)
-#                 seven = re.compile(r"GET /.+ HTTP/1.0\r\n(?i)Connection:Closed\r\n\r\n")
-#                 patterns.append(seven)
-
-                
-                accepted = False
-                
-                # check if request matches any format above
-#                 for pattern in patterns:
-#                     if pattern.match(message1):
-#                         accepted = True
-
-                #  if it isn't, return bad request message 
-                if accepted == False:
-                    bad_request = 'HTTP/1.0 400 Bad Request\n\n'
-                    # message_queues.put(bad_request)
-                    request_message[s] = bad_request
-
-                # If the request is okay:
-                else:
-
                 # check if the end of the requests:
-                    if  message[-2:] != '\n\n' or '\r\n\r\n':
+                    if  message1[-2:] != '\n\n' or '\r\n\r\n':
                         continue
                 # if not add the message to the request message for s
                     request_message[s] =  request_message[s] + message1
@@ -121,8 +108,8 @@ while inputs:
                 # if it is the end of request, process the request
                 
                 # add the socket s to the output list for watching writability
-                    if s not in outputs:
-                        outputs.append(s)
+                if s not in outputs:
+                    outputs.append(s)
 
 
 
@@ -140,7 +127,7 @@ while inputs:
     # Handle outputs
     for s in writable:
             try:
-                next_msg = message_queues[s].get_nowait()
+                next_msg = message_queues[connection].get_nowait()
             except queue.Empty:
             # No messages need to be sent so stop watching
                 outputs.remove(s)
@@ -150,9 +137,10 @@ while inputs:
                     del request_message[s]
             else:
                 #print logs and send messages
-                print_log(s,message_request,printresponse)
+                print(s,request_message,next_msg)
                 # s.send(message2send.encode())  # should this be next_msg
-                s.send(next_msg)
+                s.send(next_msg.encode())
+
                 
                 
 
@@ -169,6 +157,6 @@ while inputs:
         # Remove message queue
         del message_queues[s]
     
-    if s not in readable and writable and exceptional:
-        #handle timeout events
-        socket.settimeout(30)
+    # if s not in readable and writable and exceptional:
+    #     #handle timeout events
+    #     socket.settimeout(30)
