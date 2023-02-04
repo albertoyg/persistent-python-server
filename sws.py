@@ -11,6 +11,7 @@ import sys
 import queue
 import time
 import re
+import os
 
 
 # Create a TCP/IP socket
@@ -39,6 +40,8 @@ message_queues = {}
 request_message = {}
 
 requestLine = []
+
+ipandport = "{ip}:{port}".format(ip = sys.argv[1], port = serverPort)
 
 timeout = 30
 
@@ -72,44 +75,99 @@ while inputs:
 
         else:
             message1 =  s.recv(1024).decode()
-            if message1:
+            if message1:                
                 messages = message1.split('\n\n')
                 
-                
+
                 # First check if bad requests
 
-                requestLine.append(re.compile(r"GET /.+ HTTP/1.0\r\n\r\n"))
-                requestLine.append(re.compile(r"GET /.+ HTTP/1.0\r\nConnection:Keep-alive\r\n\r\n"))
-                requestLine.append(re.compile(r"GET /.+ HTTP/1.0\r\nConnection: keep-alive\r\n\r\n"))
-                requestLine.append(re.compile(r"GET /.+ HTTP/1.0\r\nConnection: close\r\n\r\n"))
+                f1 = re.compile(r"GET /.+ HTTP/1.0")
+                f2 = re.compile(r"GET /.+ HTTP/1.0\nConnection:Keep-alive")
+                f3 = re.compile(r"GET /.+ HTTP/1.0\nConnection: keep-alive")
 
-                for i in requestLine:
-                    match = re.search(i, messages[0])
-                    if match:
-                        print(messages[0])
-                        break
+                for message in messages:
+                    if message == '':
+                        x = 1
 
+                        # outputs.remove(s)
+                        # inputs.remove(connections)
+                        # connection.close()
 
-                if not match:
-                    bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
-                    message_queues[connection].put(bad_request)
-          
-                    
-                else:
-                    print("Match found!")
-                
-                # check if the end of the requests:
-                    if  message1[-2:] != '\n\n' or '\r\n\r\n':
-                        continue
-                # if not add the message to the request message for s
-                    request_message[s] =  request_message[s] + message1
-                    message = request_message[s]
+                    elif not re.search(f1, message) and not re.search(f2, message) and not re.search(f3, message):
+                        bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
+                        message_queues[connection].put(bad_request)
+                        curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
+                        messageCutUp = message.split('\n')
+                        log = "{time}: {ipport} {req}: {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = bad_request)
+                        print(log)
+                        # cut connection
+
+                        # outputs.remove(connection)
+                        # inputs.remove(connections)
+                        # connection.close()
+
+                    # good requests
+                    else:
+                    # add the message to the request message for s
+                        request_message[s] =  request_message[s] + message
+                        decode = message.split()
+                        filename = decode[1][1:]
+                        found = (os.path.isfile(filename))
+                        if not found:
+                            if len(decode) >= 4:
+                                status = decode[-1].split(':')
+                                if status[-1] == 'keep-alive' or ' keep-alive':
+                                    not_found_alive = 'HTTP/1.0 404 Not Found\r\nConnection: keep-alive\r\n\r\n'
+                                    sm = 'HTTP/1.0 404 Not Found'
+                                    message_queues[connection].put(not_found_alive)
+                                    curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
+                                    messageCutUp = message.split('\n')
+                                    log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = sm)
+                                    print(log)
+                                else:
+                                    not_found = 'HTTP/1.0 404 Not Found\r\nConnection: close\r\n\r\n'
+                                    sm = 'HTTP/1.0 404 Not Found'
+                                    message_queues[connection].put(not_found)
+                                    curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
+                                    messageCutUp = message.split('\n')
+                                    log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = sm)
+                                    print(log)
+                                    # close
+                        else:
+                            if len(decode) >= 4:
+                                status = decode[-1].split(':')
+                                if status[-1] == 'keep-alive' or ' keep-alive':
+                                    ok = 'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\n\r\n'
+                                    sm = 'HTTP/1.0 200 OK'
+                                    message_queues[connection].put(ok)   
+                                    curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
+                                    messageCutUp = message.split('\n')
+                                    log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = sm)
+                                    print(log)                                                                                                                                                   
+                                else:
+                                    ok = 'HTTP/1.0 200 OK\r\n\r\n'
+                                    message_queues[connection].put(ok)
+                                    curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
+                                    messageCutUp = message.split('\n')
+                                    log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = bad_request)
+                                    print(log)
+                                    # close connection
+                            else:
+                                ok = 'HTTP/1.0 200 OK\r\n\r\n'
+                                message_queues[connection].put(ok)
+                                curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
+                                messageCutUp = message.split('\n')
+                                log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = bad_request)
+                                print(log)
+                                # close connection
+                            HTMLfile = open(filename, 'r')
+                            message_queues[connection].put(HTMLfile.read())
 
                 # if it is the end of request, process the request
                 
                 # add the socket s to the output list for watching writability
-                if s not in outputs:
-                    outputs.append(s)
+                if connection not in outputs:
+                    outputs.append(connection)
 
 
 
@@ -117,9 +175,9 @@ while inputs:
             else:
 
             # handle the situation where no messages received
-                outputs.remove(s)
-                inputs.remove(s)
-                s.close()
+                outputs.remove(connection)
+                inputs.remove(connection)
+                connection.close()
                 del request_message[s]
 
                 
@@ -136,9 +194,6 @@ while inputs:
                     del message_queues[s]
                     del request_message[s]
             else:
-                #print logs and send messages
-                print(s,request_message,next_msg)
-                # s.send(message2send.encode())  # should this be next_msg
                 s.send(next_msg.encode())
 
                 
