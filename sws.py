@@ -13,16 +13,19 @@ import time
 import re
 import os
 
+
 def processRequest(request):
     requests = request.split('\n')
     for request in requests:
         if re.search(re.compile(r"GET /.* HTTP/1.0"), request):
             if re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), requests[+1]):
+                x =1 
                 # handle keeping alive
             else:
-            # honour request then close connection
+                # honour request then close connection
                 # if found: print contents 
                 # else: return not fund 
+                x = 1
 
 
 
@@ -74,7 +77,7 @@ server.bind(server_address)
 # Listen for incoming connections
 server.listen(5)
 
-# Sockets from which we expect to read
+# Sockets from wchich we expect to read
 inputs = [server]
 
 # Sockets to which we expect to write
