@@ -13,6 +13,9 @@ import time
 import re
 import os
 
+close = 0
+
+
 def checkForFile(requestline):
     decode = requestline.split()
     filename = decode[1][1:]
@@ -34,102 +37,97 @@ def processRequest(request):
 
 
 
-def checkMULTImessages(messages):
+# def checkMULTImessages(messages):
 
-    for curRequest in range(len(messages)):
-    # check if request is in correct GET.... format
-        if re.search(re.compile(r"GET /.* HTTP/1.0"), messages[curRequest]):
-        # if it is, check if next request is connection: alive
-            if re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), messages[curRequest+1]):
-            # if connection: keep-alive, check if file exists 
-                found, filename = checkForFile(messages[curRequest])
-                if found: 
-                    ok = 'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\n\r\n'
-                #   PRINT OK MESSAGE TO CLIENT 
-                    message_queues[s].put(ok)
-                #   BUT FOR NOW....
-                    print(ok)
-                # output file contents 
-                    HTMLfile = open(filename, 'r')
-                #   PRINT file contents TO CLIENT 
-                #   message_queues[connection].put(HTMLfile.read())
-                #   BUT for now....
-                    print(HTMLfile.read())
+#     for curRequest in range(len(messages)):
+#     # check if request is in correct GET.... format
+#         if re.search(re.compile(r"GET /.* HTTP/1.0"), messages[curRequest]):
+#         # if it is, check if next request is connection: alive
+#             if re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), messages[curRequest+1]):
+#             # if connection: keep-alive, check if file exists 
+#                 found, filename = checkForFile(messages[curRequest])
+#                 if found: 
+#                     ok = 'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\n\r\n'
+#                 #   PRINT OK MESSAGE TO CLIENT 
+#                     message_queues[s].put(ok)
+#                 #   BUT FOR NOW....
+#                     print(ok)
+#                 # output file contents 
+#                     HTMLfile = open(filename, 'r')
+#                 #   PRINT file contents TO CLIENT 
+#                 #   message_queues[connection].put(HTMLfile.read())
+#                 #   BUT for now....
+#                     print(HTMLfile.read())
 
-                else:
-        #       # file not found
-                    not_found = 'HTTP/1.0 404 Not Found\r\nConnection: keep-alive\r\n\r\n'
-                #   PRINT notfound MESSAGE TO CLIENT 
-                    message_queues[s].put(not_found)
-                #   BUT FOR NOW....
-                    print(not_found)
-            else:
-            # check for bad header line
-                if not re.search(re.compile(r"connection:\s*close", re.IGNORECASE), messages[curRequest+1]) and messages[curRequest + 1] != '':
-                # if we are here, the header line is bad
-                    bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
-                #   PRINT notfound MESSAGE TO CLIENT 
-                    message_queues[s].put(bad_request)
-                #   BUT FOR NOW....
-                    outputs.remove(s)
-                    inputs.remove(connection)
-                    s.close()
-        # if connection: closed, check if file exists 
-                found, filename = checkForFile(messages[curRequest])
-                if found: 
-                    ok = 'HTTP/1.0 200 OK\r\n\r\n'
-                #   PRINT OK MESSAGE TO CLIENT 
-                    message_queues[s].put(ok)
-                #   BUT FOR NOW....
-                    print(ok)
-                # output file contents 
-                    HTMLfile = open(filename, 'r')
-                #   PRINT file contents TO CLIENT 
-                    message_queues[s].put(HTMLfile.read())
-                #   BUT for now....
-                    print(HTMLfile.read())
+#                 else:
+#         #       # file not found
+#                     not_found = 'HTTP/1.0 404 Not Found\r\nConnection: keep-alive\r\n\r\n'
+#                 #   PRINT notfound MESSAGE TO CLIENT 
+#                     message_queues[s].put(not_found)
+#                 #   BUT FOR NOW....
+#                     print(not_found)
+#             else:
+#             # check for bad header line
+#                 if not re.search(re.compile(r"connection:\s*close", re.IGNORECASE), messages[curRequest+1]) and messages[curRequest + 1] != '':
+#                 # if we are here, the header line is bad
+#                     bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
+#                 #   PRINT notfound MESSAGE TO CLIENT 
+#                     message_queues[s].put(bad_request)
+#                 #   BUT FOR NOW....
 
-                # CLOSE CONNECTION
-                    outputs.remove(s)
-                    inputs.remove(connection)
-                    s.close()
-                else:
-        #       # file not found
-                    not_found = 'HTTP/1.0 404 Not Found\r\nConnection: close\r\n\r\n'
-                #   PRINT notfound MESSAGE TO CLIENT 
-                    message_queues[s].put(not_found)
-                #   BUT FOR NOW....
-                    print(not_found)
-            
-                # CLOSE CONNECTION
-                    outputs.remove(s)
-                    inputs.remove(connection)
-                    s.close()
-
-    # check if end of requests: \n\n
-        elif messages[curRequest] == '':
-        # empty line detected
-            if curRequest + 1 < len(messages):
-            # check if it's last line
-                if messages[curRequest + 1] == '':
-                # if we are here, last two lines are empty
-                    outputs.remove(s)
-                    inputs.remove(connection)
-                    s.close()
+#         # if connection: closed, check if file exists 
+#                 found, filename = checkForFile(messages[curRequest])
+#                 if found: 
+#                     ok = 'HTTP/1.0 200 OK\r\n\r\n'
+#                 #   PRINT OK MESSAGE TO CLIENT 
+#                     message_queues[s].put(ok)
+#                 #   BUT FOR NOW....
+#                     print(ok)
+#                 # output file contents 
+#                     HTMLfile = open(filename, 'r')
+#                 #   PRINT file contents TO CLIENT 
+#                     message_queues[s].put(HTMLfile.read())
+#                 #   BUT for now....
+#                     print(HTMLfile.read())
+#                     close = 1
                     
-    # BAD REQUEST  
-        else:
-        # ensure it's not the header
-            if not re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), messages[curRequest]) and not re.search(re.compile(r"connection:\s*close", re.IGNORECASE), messages[curRequest]) and messages[curRequest] != '':
-                bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
-            #   PRINT notfound MESSAGE TO CLIENT 
-                message_queues[s].put(bad_request)
-            #   BUT FOR NOW....
-                outputs.remove(s)
-                inputs.remove(connection)
-                s.close()
+#                 # CLOSE CONNECTION
 
-                print(bad_request)
+
+#                 else:
+#         #       # file not found
+#                     not_found = 'HTTP/1.0 404 Not Found\r\nConnection: close\r\n\r\n'
+#                 #   PRINT notfound MESSAGE TO CLIENT 
+#                     message_queues[s].put(not_found)
+#                 #   BUT FOR NOW....
+#                     print(not_found)
+            
+#                 # CLOSE CONNECTION
+
+
+#     # check if end of requests: \n\n
+#         elif messages[curRequest] == '':
+#         # empty line detected
+#             if curRequest + 1 < len(messages):
+#             # check if it's last line
+#                 if messages[curRequest + 1] == '':
+#                 # if we are here, last two lines are empty
+#                     x = 1 
+
+
+                    
+#     # BAD REQUEST  
+#         else:
+#         # ensure it's not the header
+#             if not re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), messages[curRequest]) and not re.search(re.compile(r"connection:\s*close", re.IGNORECASE), messages[curRequest]) and messages[curRequest] != '':
+#                 bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
+#             #   PRINT notfound MESSAGE TO CLIENT 
+#                 message_queues[s].put(bad_request)
+#             #   BUT FOR NOW....
+
+#         if s not in outputs:
+#             outputs.append(s)
+
 
 
 
@@ -155,11 +153,13 @@ outputs = []
 # Outgoing message queues (socket:Queue)
 message_queues = {}
 
+buffer = []
+
 # request message
 request_message = {}
 
 requestLine = []
-
+curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
 ipandport = "{ip}:{port}".format(ip = sys.argv[1], port = serverPort)
 
 timeout = 30
@@ -188,150 +188,249 @@ while inputs:
             connection.setblocking(0)
             inputs.append(connection)
             # outputs.append(s)
-            request_message[connection] = "" # OR queue
+            request_message[connection] = queue.Queue() # OR queue
             #new_request[s] = True
             #persistent_socket[connection] = True
             # Give the connection a queue for data
             # we want to send
             message_queues[connection] = queue.Queue()
+            
 
         else:
             message1 =  s.recv(1024).decode()
             if message1:   
                 if message1.count('\n') != 1:
+                    messages = message1.split('\n')
+
+                    for curRequest in range(len(messages)):
+                        # check if request is in correct GET.... format
+                            if re.search(re.compile(r"GET /.* HTTP/1.0"), messages[curRequest]):
+                            # if it is, check if next request is connection: alive
+                                if re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), messages[curRequest+1]):
+                                # if connection: keep-alive, check if file exists 
+                                    found, filename = checkForFile(messages[curRequest])
+                                    if found: 
+                                        HTMLfile = open(filename, 'r')
+                                        ok = 'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\n\r\n{content}'.format(content = HTMLfile.read())
+                                    #   PRINT OK MESSAGE TO CLIENT 
+                                        message_queues[s].put(ok)
+                                    #   BUT FOR NOW....
+                                        
+                                    # output file contents 
+                                        
+                                    #   PRINT file contents TO CLIENT 
+                                    #   message_queues[connection].put(HTMLfile.read())
+                                    #   BUT for now....
+                                        
+
+                                    else:
+                            #       # file not found
+                                        not_found = 'HTTP/1.0 404 Not Found\r\nConnection: keep-alive\r\n\r\n'
+                                    #   PRINT notfound MESSAGE TO CLIENT 
+                                        message_queues[s].put(not_found)
+                                    #   BUT FOR NOW....
+                                        print(not_found)
+                                else:
+                                # check for bad header line
+                                    if not re.search(re.compile(r"connection:\s*close", re.IGNORECASE), messages[curRequest+1]) and messages[curRequest + 1] != '':
+                                    # if we are here, the header line is bad
+                                        bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
+                                    #   PRINT notfound MESSAGE TO CLIENT 
+                                        message_queues[s].put(bad_request)
+                                    #   BUT FOR NOW....
+                                    found, filename = checkForFile(messages[curRequest])
+                                    if found: 
+                                        HTMLfile = open(filename, 'r')
+                                        ok = 'HTTP/1.0 200 OK\r\nConnection: close\r\n\r\n{content}'.format(content = HTMLfile.read())
+                                    #   PRINT OK MESSAGE TO CLIENT 
+                                        message_queues[s].put(ok)
+                                    #   BUT FOR NOW....
+                                        print(ok)
+                                    # output file contents 
+                                        
+                                    #   PRINT file contents TO CLIENT \c
+                                        message_queues[s].put(HTMLfile.read())
+                                    #   BUT for now....
+                                        print(HTMLfile.read())
+
+
+                                    else:
+                                       # file not found
+                                        not_found = 'HTTP/1.0 404 Not Found\r\nConnection: close\r\n\r\n'
+                                        #   PRINT notfound MESSAGE TO CLIENT 
+                                        message_queues[s].put(not_found)
+                                        #   BUT FOR NOW....
+                                        
+            
+                                        # CLOSE CONNECTION
+
+                            # if connection: closed, check if file exists 
+                                    found, filename = checkForFile(messages[curRequest])
+                                    if found: 
+                                        HTMLfile = open(filename, 'r')
+                                        ok = 'HTTP/1.0 200 OK\r\n\r\n{content}'.format(content = HTMLfile.read())
+                                    #   PRINT OK MESSAGE TO CLIENT 
+                                        message_queues[s].put(ok)
+                                    #   BUT FOR NOW....
+                                        print(ok)
+                                    # output file contents 
+                                        
+                                    #   PRINT file contents TO CLIENT \c
+                                        message_queues[s].put(HTMLfile.read())
+                                    #   BUT for now....
+                                        print(HTMLfile.read())
+
+                                    # check if end of requests: \n\n
+                            elif messages[curRequest] == '':
+                                    # empty line detected
+                                if curRequest + 1 < len(messages):
+                                    # check if it's last line
+                                    if messages[curRequest + 1] == '':
+                                    # if we are here, last two lines are empty
+                                        x = 1 
+
+
+                    
+                    # BAD REQUEST  
+                            else:
+        # ensure it's not the header
+                                if not re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), messages[curRequest]) and not re.search(re.compile(r"connection:\s*close", re.IGNORECASE), messages[curRequest]) and messages[curRequest] != '':
+                                    bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
+                                    print(bad_request)
+            #   PRINT notfound MESSAGE TO CLIENT 
+                                    message_queues[s].put(bad_request)
+            #   BUT FOR NOW....
+
                     if s not in outputs:
                         outputs.append(s)
-                    checkMULTImessages(message1.split('\n'))
+                                        
+
+
+
                 else:
                     # check if message is empty
+                    if not re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), message1) and not re.search(re.compile(r"connection:\s*close", re.IGNORECASE), message1) and not re.search(re.compile(r"GET /.* HTTP/1.0"), message1) and message1 != '\n':
+                        bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
+            #   PRINT notfound MESSAGE TO CLIENT 
+                        message_queues[s].put(bad_request)
+                        if s not in outputs:
+                            outputs.append(s)
+
                     if lastmessage == '\n':
                         if message1 == '\n':
                             print('done single messages')
-                            if s not in outputs:
-                                outputs.append(s)
-                            processRequest(request_message[s])
+                            
+                    if re.search(re.compile(r"GET /.* HTTP/1.0"), message1):
+                        buffer.append(message1)
 
+                    if re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), message1):
+                        buffer.append(message1)
 
-                    request_message[s] = request_message[s] + message1
+                    
+                    if message1 == '\n':
+                        
+                        # time to process
+                        for line in range(len(buffer)):
+                            # check if first line is GET
+                            if re.search(re.compile(r"GET /.* HTTP/1.0"), buffer[line]):
+                                # if it is: check it has connection keep alive or not
+                                if line + 1 >= len(buffer):
+                                    # if this is the only line:
+                                    # check then close
+                                    
+                                    found, filename = checkForFile(buffer[line])
+                    
+                                    if not found:
+                                        not_found = 'HTTP/1.0 404 Not Found\r\nConnection: close\r\n\r\n'
+                                            #   PRINT notfound MESSAGE TO CLIENT 
+                                        message_queues[s].put(not_found)
+                                            
+                                    else:
+                                        # found file and close
+                                        HTMLfile = open(filename, 'r')
+                                        ok = 'HTTP/1.0 200 OK\r\nConnection: close\r\n\r\n{content}'.format(content = HTMLfile.read())
+                                        sm = 'HTTP/1.0 200 OK'
+                                        log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = buffer[line][:-1], res = sm)
+                                        request_message[s].put(log)
+                                        message_queues[s].put(ok)
+                                else:
+                                    # have more lines: 
+                                        # check if keep alive
+                                        if re.search(re.compile(r"connection:\s*Keep-alive", re.IGNORECASE), buffer[line+1]):
+
+                                            found, filename = checkForFile(buffer[line])
+            
+                                            if not found:
+                                            # process and not close
+                                                not_found = 'HTTP/1.0 404 Not Found\r\nConnection: keep-alive\r\n\r\n'
+                                                #   PRINT notfound MESSAGE TO CLIENT 
+                                                message_queues[s].put(not_found)
+                                                
+                                            else:
+                                            # found file and keep alive
+                                                HTMLfile = open(filename, 'r')
+                                                ok = 'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\n\r\n{content}'.format(content = HTMLfile.read())
+                                                message_queues[s].put(ok)
+                                                
+                                        else:
+
+                                            found, filename = checkForFile(buffer[line])
+                        
+                                            if not found:
+                                                not_found = 'HTTP/1.0 404 Not Found\r\nConnection: close\r\n\r\n'
+                                                #   PRINT notfound MESSAGE TO CLIENT 
+                                                message_queues[s].put(not_found)
+                                                
+                                            else:
+                                            # found file and close
+                                                HTMLfile = open(filename, 'r')
+                                                ok = 'HTTP/1.0 200 OK\r\nConnection: close\r\n\r\n{content}'.format(content = HTMLfile.read())
+                                                message_queues[s].put(ok)
+                                        
+                                   #  process and close
+
+                        # clear buffer
+                        buffer = []
+
+                  
 
                     lastmessage = message1
+                    if s not in outputs:
+                        outputs.append(s)
+                    
 
-                # if message1[-2:] == ('\n\n'):
-                #     checkmessages()
-
-                # messages = message1.split('\n\n')
-               
-
-                # # First check if bad requests
-
-                # f1 = re.compile(r"GET /.+ HTTP/1.0")
-                # f2 = re.compile(r"GET /.+ HTTP/1.0\nConnection:Keep-alive")
-                # f3 = re.compile(r"GET /.+ HTTP/1.0\nConnection: keep-alive")
-
-                # for message in messages:
-                #     if message == '':
-                #         print('doneeeee')
-
-                #         # outputs.remove(s)
-                #         # inputs.remove(connections)
-                #         # connection.close()
-
-                #     elif not re.search(f1, message) and not re.search(f2, message) and not re.search(f3, message):
-                #         bad_request = 'HTTP/1.0 400 Bad Request\r\n\r\n'
-                #         message_queues[connection].put(bad_request)
-                #         curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
-                #         messageCutUp = message.split('\n')
-                #         log = "{time}: {ipport} {req}: {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = bad_request)
-                #         print(log)
-                #         # cut connection
-
-                #         # outputs.remove(connection)
-                #         # inputs.remove(connections)
-                #         # connection.close()
-
-                #     # good requests
-                #     else:
-                #     # add the message to the request message for s
-                #         request_message[s] =  request_message[s] + message
-                #         decode = message.split()
-                #         filename = decode[1][1:]
-                #         found = (os.path.isfile(filename))
-                #         if not found:
-                #             if len(decode) >= 4:
-                #                 status = decode[-1].split(':')
-                #                 if status[-1] == 'keep-alive' or ' keep-alive':
-                #                     not_found_alive = 'HTTP/1.0 404 Not Found\r\nConnection: keep-alive\r\n\r\n'
-                #                     sm = 'HTTP/1.0 404 Not Found'
-                #                     message_queues[connection].put(not_found_alive)
-                #                     curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
-                #                     messageCutUp = message.split('\n')
-                #                     log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = sm)
-                #                     print(log)
-                #                 else:
-                #                     not_found = 'HTTP/1.0 404 Not Found\r\nConnection: close\r\n\r\n'
-                #                     sm = 'HTTP/1.0 404 Not Found'
-                #                     message_queues[connection].put(not_found)
-                #                     curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
-                #                     messageCutUp = message.split('\n')
-                #                     log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = sm)
-                #                     print(log)
-                #                     # close
-                #         else:
-                #             if len(decode) >= 4:
-                #                 status = decode[-1].split(':')
-                #                 if status[-1] == 'keep-alive' or ' keep-alive':
-                #                     ok = 'HTTP/1.0 200 OK\r\nConnection: keep-alive\r\n\r\n'
-                #                     sm = 'HTTP/1.0 200 OK'
-                #                     message_queues[connection].put(ok)   
-                #                     curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
-                #                     messageCutUp = message.split('\n')
-                #                     log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = sm)
-                #                     print(log)                                                                                                                                                   
-                #                 else:
-                #                     ok = 'HTTP/1.0 200 OK\r\n\r\n'
-                #                     message_queues[connection].put(ok)
-                #                     curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
-                #                     messageCutUp = message.split('\n')
-                #                     log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = ok)
-                #                     print(log)
-                #                     # close connection
-                #             else:
-                #                 ok = 'HTTP/1.0 200 OK\r\n\r\n'
-                #                 message_queues[connection].put(ok)
-                #                 curtime = time.strftime("%a %b %d %H:%M:%S %Z %Y", time.localtime())
-                #                 messageCutUp = message.split('\n')
-                #                 log = "{time}: {ipport} {req}; {res}".format(time = curtime, ipport = ipandport, req = messageCutUp[0], res = ok)
-                #                 print(log)
-                #                 # close connection
-                #             HTMLfile = open(filename, 'r')
-                #             message_queues[connection].put(HTMLfile.read())
-
-                # # if it is the end of request, process the request
-                
-                # # add the socket s to the output list for watching writability
-                # if connection not in outputs:
-                #     outputs.append(connection)
-
-
-
-
-                
 
     # Handle outputs
     for s in writable:
             try:
                 next_msg = message_queues[s].get_nowait()
+                log = request_message[s].get_nowait()
             except queue.Empty:
             # No messages need to be sent so stop watching
                 outputs.remove(s)
                 if s not in inputs:
+                    inputs.remove(s)
+                    outputs.remove(s)
                     s.close()
                     del message_queues[s]
                     del request_message[s]
             else:
+                close = True
                 s.send(next_msg.encode())
-
-                
+                print(log)
+                decoded = next_msg.split()
+                # print(decoded)
+                for msg in decoded:
+                    if re.search(re.compile(r"keep-alive"), msg):
+                        close = False
+                if close == True:
+                    inputs.remove(s)
+                    outputs.remove(s)
+                    if s not in inputs:
+                        s.close()
+                        del message_queues[s]
+                        del request_message[s]
+                    
                 
 
     # Handle "exceptional conditions"
