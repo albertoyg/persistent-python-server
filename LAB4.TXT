@@ -253,3 +253,19 @@ listening on host-nat, link-type EN10MB (Ethernet), capture size 262144 bytes
 219 packets captured
 219 packets received by filter
 0 packets dropped by kernel
+
+2) 
+
+Advantages:
+- Resolving domain names to IP addresses is a breeze with recursive DNS queries.
+- With recursive DNS resolvers, you can save previous query results and enjoy a faster
+subsequent query for the same domain name. It also reduces network traffic.
+- Having a single resolver handle your queries ensures a reliable and consistent experience for you.
+
+Disadvantages:
+- Having a single resolver also increases the risk of security issues such as cache poisoning attacks and malicious redirections.
+- The resolver handles all client requests, so recursive DNS queries can put a heavy load on it.
+- The process and caching of recursive DNS queries can slow down the system and decrease performance.
+
+3) 
+There are a few differences. Im not entirely sure how to articulate what they are but I suspect its because of my geographical location or my network configuration 
