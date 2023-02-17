@@ -1,0 +1,22 @@
+reading from file tcp-connection-flow.cap, link-type EN10MB (Ethernet)
+12:05:57.920706 IP h1.57020 > h2.5001: Flags [S], seq 1918797557, win 64240, options [mss 1460,sackOK,TS val 3099848967 ecr 0,nop,wscale 7], length 0
+12:05:58.121466 IP h2.5001 > h1.57020: Flags [S.], seq 2123339831, ack 1918797558, win 1448, options [mss 1460,sackOK,TS val 2392696081 ecr 3099848967,nop,wscale 0], length 0
+12:05:58.121538 IP h1.57020 > h2.5001: Flags [.], ack 1, win 502, options [nop,nop,TS val 3099849168 ecr 2392696081], length 0
+12:05:58.122022 IP h1.57020 > h2.5001: Flags [P.], seq 1:725, ack 1, win 502, options [nop,nop,TS val 3099849169 ecr 2392696081], length 724
+12:05:58.122060 IP h1.57020 > h2.5001: Flags [P.], seq 725:1449, ack 1, win 502, options [nop,nop,TS val 3099849169 ecr 2392696081], length 724
+12:05:58.222154 IP h2.5001 > h1.57020: Flags [.], ack 725, win 724, options [nop,nop,TS val 2392696182 ecr 3099849169], length 0
+12:05:58.222462 IP h2.5001 > h1.57020: Flags [.], ack 1449, win 1448, options [nop,nop,TS val 2392696182 ecr 3099849169], length 0
+12:05:58.222470 IP h1.57020 > h2.5001: Flags [P.], seq 1449:2173, ack 1, win 502, options [nop,nop,TS val 3099849269 ecr 2392696182], length 724
+12:05:58.222472 IP h1.57020 > h2.5001: Flags [P.], seq 2173:2897, ack 1, win 502, options [nop,nop,TS val 3099849269 ecr 2392696182], length 724
+12:05:58.322722 IP h2.5001 > h1.57020: Flags [.], ack 2897, win 0, options [nop,nop,TS val 2392696282 ecr 3099849269], length 0
+12:05:58.322787 IP h2.5001 > h1.57020: Flags [.], ack 2897, win 1448, options [nop,nop,TS val 2392696282 ecr 3099849269], length 0
+12:05:58.322797 IP h1.57020 > h2.5001: Flags [P.], seq 2897:3621, ack 1, win 502, options [nop,nop,TS val 3099849369 ecr 2392696282], length 724
+12:05:58.322802 IP h1.57020 > h2.5001: Flags [P.], seq 3621:4345, ack 1, win 502, options [nop,nop,TS val 3099849369 ecr 2392696282], length 724
+12:05:58.423077 IP h2.5001 > h1.57020: Flags [.], ack 4345, win 0, options [nop,nop,TS val 2392696383 ecr 3099849369], length 0
+12:05:58.423139 IP h2.5001 > h1.57020: Flags [.], ack 4345, win 1448, options [nop,nop,TS val 2392696383 ecr 3099849369], length 0
+12:05:58.423149 IP h1.57020 > h2.5001: Flags [P.], seq 4345:5069, ack 1, win 502, options [nop,nop,TS val 3099849470 ecr 2392696383], length 724
+12:05:58.523499 IP h2.5001 > h1.57020: Flags [.], ack 5069, win 1448, options [nop,nop,TS val 2392696483 ecr 3099849470], length 0
+12:05:58.523525 IP h1.57020 > h2.5001: Flags [FP.], seq 5069:5793, ack 1, win 502, options [nop,nop,TS val 3099849570 ecr 2392696483], length 724
+12:05:58.623955 IP h2.5001 > h1.57020: Flags [.], ack 5794, win 1448, options [nop,nop,TS val 2392696583 ecr 3099849570], length 0
+12:05:58.624561 IP h2.5001 > h1.57020: Flags [F.], seq 1, ack 5794, win 1448, options [nop,nop,TS val 2392696584 ecr 3099849570], length 0
+12:05:58.624585 IP h1.57020 > h2.5001: Flags [.], ack 2, win 502, options [nop,nop,TS val 3099849671 ecr 2392696584], length 0
